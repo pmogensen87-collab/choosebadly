@@ -1,52 +1,47 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
-import type Phaser from "phaser";
+import { useEffect, useRef } from "react";
 
-type PhaserModule = typeof import("phaser");
-type SceneClass = new () => Phaser.Scene;
+import {
+  createGameConfig,
+  type PhaserModule,
+} from "@/game/managers/phaserConfig";
 
 export default function GameCanvas() {
   const gameRef = useRef<HTMLDivElement>(null);
-  const [phaserModule, setPhaserModule] = useState<PhaserModule | null>(null);
-  const [sceneClass, setSceneClass] = useState<SceneClass | null>(null);
 
   useEffect(() => {
-    // Dynamically import Phaser and the scene only on the client side.
-    Promise.all([import("phaser"), import("../game/scenes/Level1")]).then(([phaserMod, sceneMod]) => {
-      const resolvedPhaser = (phaserMod as unknown as { default?: PhaserModule }).default ?? phaserMod;
-      setPhaserModule(resolvedPhaser);
-      setSceneClass(() => sceneMod.default);
-    });
-  }, []);
+    let isDisposed = false;
+    let game: import("phaser").Game | null = null;
 
-  useEffect(() => {
-    if (!gameRef.current || !phaserModule || !sceneClass) return;
+    const mountGame = async () => {
+      if (!gameRef.current) {
+        return;
+      }
 
-    const game = new phaserModule.Game({
-      type: phaserModule.AUTO,
-      width: 960,
-      height: 540,
-      parent: gameRef.current,
-      backgroundColor: "#0f172a",
-      scale: {
-        mode: phaserModule.Scale.FIT,
-        autoCenter: phaserModule.Scale.CENTER_BOTH
-      },
-      physics: {
-        default: "arcade",
-        arcade: {
-          gravity: { x: 0, y: 1200 },
-          debug: false,
-        },
-      },
-      scene: sceneClass,
-    });
+      const [phaserImport, sceneImport] = await Promise.all([
+        import("phaser"),
+        import("@/game/scenes/Level1"),
+      ]);
+      const phaserModule =
+        (phaserImport as { default?: PhaserModule }).default ?? phaserImport;
+
+      if (isDisposed || !gameRef.current) {
+        return;
+      }
+
+      game = new phaserModule.Game(
+        createGameConfig(phaserModule, gameRef.current, sceneImport.default),
+      );
+    };
+
+    void mountGame();
 
     return () => {
-      game.destroy(true);
+      isDisposed = true;
+      game?.destroy(true);
     };
-  }, [phaserModule, sceneClass]);
+  }, []);
 
   return <div ref={gameRef} />;
 }
