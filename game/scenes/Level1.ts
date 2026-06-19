@@ -13,13 +13,13 @@ import type Player from "@/game/player/Player";
 import { damagePlayer, killPlayer } from "@/game/player/playerSystem";
 import { updateHUD } from "@/game/ui/hud";
 import { performAttack } from "@/game/weapons/combat";
-import type WeaponSystem from "@/game/weapons/weaponSystem";
+import type CombatManager from "@/game/weapons/combatManager";
 import { preloadLevelAssets } from "@/game/world/assets";
 
 export default class Level1 extends Phaser.Scene {
   cameraController!: CameraController;
   playerController!: Player;
-  weaponSystem!: WeaponSystem;
+  combatManager!: CombatManager;
   player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   isDead = false;
   isAttacking = false;
@@ -81,8 +81,10 @@ export default class Level1 extends Phaser.Scene {
   damageEnemy(
     enemy: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
     amount?: number,
+    knockbackX?: number,
+    knockbackY?: number,
   ) {
-    return damageEnemy(this, enemy, amount);
+    return damageEnemy(this, enemy, amount, knockbackX, knockbackY);
   }
 
   killEnemy(enemy: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody) {

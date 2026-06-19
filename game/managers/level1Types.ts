@@ -2,9 +2,9 @@
 
 export const CAMERA_WIDTH = 960;
 export const CAMERA_HEIGHT = 540;
-export const LEVEL_WIDTH = 2200;
+export const LEVEL_WIDTH = 3200;
 export const LEVEL_HEIGHT = 540;
-export const MID_TUBE_EXIT_X = 1200;
+export const MID_TUBE_EXIT_X = 1600;
 export const MID_TUBE_EXIT_Y = 450;
 
 export type MovementKeys = {

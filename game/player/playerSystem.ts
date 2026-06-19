@@ -92,7 +92,7 @@ export function damagePlayer(
 
   const damaged = scene.playerController.takeDamage(sourceX, sourceY, amount);
   if (damaged) {
-    scene.weaponSystem.clearCounterAttackWindow();
+    scene.combatManager.clearCounterAttackWindow();
     clearComboCounter(scene);
   }
 }
@@ -103,8 +103,8 @@ export function killPlayer(scene: Level1) {
   }
 
   scene.isDead = true;
-  scene.weaponSystem.cancelAttack();
-  scene.weaponSystem.clearCounterAttackWindow();
+  scene.combatManager.cancelAttack();
+  scene.combatManager.clearCounterAttackWindow();
   clearComboCounter(scene);
   scene.playSFX("death");
   applyDeathSlowMotion(scene);

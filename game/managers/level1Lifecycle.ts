@@ -24,7 +24,7 @@ import {
 } from "@/game/player/playerSystem";
 import type Level1 from "@/game/scenes/Level1";
 import { createHUD, updateComboCounter } from "@/game/ui/hud";
-import WeaponSystem from "@/game/weapons/weaponSystem";
+import CombatManager from "@/game/weapons/combatManager";
 import { createLevelAnimations } from "@/game/world/animations";
 import {
   buildLevelWorld,
@@ -65,7 +65,7 @@ export function initializeLevel1(
 
   const world = buildLevelWorld(scene);
   createPlayer(scene);
-  scene.weaponSystem = new WeaponSystem(scene);
+  scene.combatManager = new CombatManager(scene);
   scene.cameraController = new CameraController(scene);
   createEnemies(scene);
   registerEnemyEncounters(scene, world.platforms);
@@ -96,7 +96,7 @@ export function updateLevel1(scene: Level1) {
     return;
   }
 
-  scene.weaponSystem.update();
+  scene.combatManager.update();
   revealHiddenHazards(scene);
   updateComboCounter(scene);
 

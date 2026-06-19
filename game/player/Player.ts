@@ -2,7 +2,6 @@ import Phaser from "phaser";
 
 import type { MovementKeys } from "@/game/managers/level1Types";
 import type Level1 from "@/game/scenes/Level1";
-import type { WeaponAttackId } from "@/game/weapons/types";
 import { handleTubeInteraction } from "@/game/world/levelBuilder";
 
 const COYOTE_TIME_MS = 110;
@@ -26,6 +25,8 @@ const FLIP_BODY_WIDTH = 22;
 const FLIP_BODY_HEIGHT = 30;
 const DASH_BODY_WIDTH = 22;
 const DASH_BODY_HEIGHT = 28;
+const SPRINT_SPEED = 380;
+const SPRINT_JUMP_SPEED = -470;
 const MAX_HEALTH = 5;
 const DAMAGE_INVULNERABILITY_MS = 900;
 const DAMAGE_FLASH_MS = 120;
@@ -40,7 +41,7 @@ const KATANA_EDGE_COLOR = 0x67e8f9;
 const KATANA_HANDLE_COLOR = 0x8b5e34;
 const KATANA_SHEATH_COLOR = 0x082f49;
 
-type PlayerPose = "idle" | "walk" | "jump" | WeaponAttackId;
+type PlayerPose = "idle" | "walk" | "jump" | string;
 
 export default class Player {
   readonly sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
@@ -51,7 +52,7 @@ export default class Player {
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly toggleFullscreen: () => void;
 
-  private attackPose: WeaponAttackId | null = null;
+  private attackPose: string | null = null;
   private renderVisible = true;
   private walkCycle = 0;
   private coyoteUntil = 0;
@@ -102,7 +103,7 @@ export default class Player {
     this.draw();
   }
 
-  playAttack(type: WeaponAttackId) {
+  playAttack(type: string) {
     this.attackPose = type;
     this.draw();
   }
@@ -141,7 +142,7 @@ export default class Player {
       return false;
     }
 
-    this.scene.weaponSystem.cancelAttack();
+    this.scene.combatManager.cancelAttack();
     this.scene.isAttacking = false;
     this.attackPose = null;
     this.scene.isClimbing = false;
@@ -224,8 +225,8 @@ export default class Player {
     }
 
     const isSprinting = this.keys.SHIFT.isDown && !this.isDashing();
-    const speed = isSprinting ? 460 : 300;
-    const jumpSpeed = isSprinting ? -480 : -450;
+    const speed = isSprinting ? SPRINT_SPEED : 300;
+    const jumpSpeed = isSprinting ? SPRINT_JUMP_SPEED : -450;
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.S)) {
       handleTubeInteraction(this.scene);

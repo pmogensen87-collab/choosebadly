@@ -1,14 +1,15 @@
-﻿import type Phaser from "phaser";
+import type Phaser from "phaser";
 
+import { LEVEL_WIDTH } from "@/game/managers/level1Types";
 import type Level1 from "@/game/scenes/Level1";
 
 export function createLevelBackground(scene: Phaser.Scene) {
   const bgGraphics = scene.add.graphics();
   bgGraphics.fillStyle(0x1e293b, 0.3);
-  for (let i = 0; i < 15; i += 1) {
+  for (let i = 0; i < Math.ceil(LEVEL_WIDTH / 220) + 2; i += 1) {
     const height = 200 + Math.random() * 400;
     const width = 100 + Math.random() * 150;
-    const buildingX = i * 250;
+    const buildingX = i * 220;
     const buildingY = 540 - height;
     bgGraphics.fillRect(buildingX, buildingY, width, height);
     bgGraphics.lineStyle(1, 0x334155, 0.2);
@@ -33,7 +34,7 @@ export function createLevelBackground(scene: Phaser.Scene) {
 
   for (let i = 0; i < 3; i += 1) {
     const ship = scene.add.rectangle(
-      Math.random() * 2200,
+      Math.random() * LEVEL_WIDTH,
       50 + Math.random() * 150,
       60,
       20,
@@ -43,7 +44,7 @@ export function createLevelBackground(scene: Phaser.Scene) {
     ship.setScrollFactor(0.1);
     scene.tweens.add({
       targets: ship,
-      x: "+=2200",
+      x: `+=${LEVEL_WIDTH}`,
       duration: 40000 + Math.random() * 20000,
       repeat: -1,
     });
@@ -51,11 +52,11 @@ export function createLevelBackground(scene: Phaser.Scene) {
 
   const grid = scene.add.graphics();
   grid.lineStyle(1, 0x1e293b, 0.5);
-  for (let x = 0; x < 2200; x += 40) {
+  for (let x = 0; x < LEVEL_WIDTH; x += 40) {
     grid.lineBetween(x, 0, x, 540);
   }
   for (let y = 0; y < 540; y += 40) {
-    grid.lineBetween(0, y, 2200, y);
+    grid.lineBetween(0, y, LEVEL_WIDTH, y);
   }
 }
 
@@ -91,7 +92,7 @@ export function updateLighting(scene: Level1) {
 
 export function createRain(scene: Level1) {
   scene.rainParticles = scene.add.particles(0, 0, "rain_drop", {
-    x: { min: 0, max: 2200 },
+    x: { min: 0, max: LEVEL_WIDTH },
     y: -10,
     lifespan: 1500,
     speedY: { min: 600, max: 900 },
@@ -101,3 +102,5 @@ export function createRain(scene: Level1) {
     blendMode: "ADD",
   });
 }
+
+

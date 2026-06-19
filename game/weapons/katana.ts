@@ -1,15 +1,20 @@
-import type { WeaponAttackDefinition, WeaponId } from "@/game/weapons/types";
+import AttackData from "@/game/weapons/attackData";
+import type { Weapon } from "@/game/weapons/weapon";
+import type { WeaponId } from "@/game/weapons/types";
 
-export const KATANA_ID: WeaponId = "katana";
-
-export const KATANA_COMBO: WeaponAttackDefinition[] = [
-  {
+const ATTACKS = [
+  new AttackData({
     id: "katana_slash_1",
+    poseKey: "katana_slash_1",
+    damage: 1,
+    knockbackX: 160,
+    knockbackY: -120,
     durationMs: 180,
     activeStartMs: 46,
     activeEndMs: 110,
     queueOpenMs: 92,
-    comboWindowMs: 260,
+    comboResetMs: 260,
+    cooldownMs: 170,
     hitbox: {
       offsetX: 34,
       offsetY: -10,
@@ -26,14 +31,19 @@ export const KATANA_COMBO: WeaponAttackDefinition[] = [
       strokeColor: 0x67e8f9,
       coreColor: 0xffffff,
     },
-  },
-  {
+  }),
+  new AttackData({
     id: "katana_slash_2",
+    poseKey: "katana_slash_2",
+    damage: 1,
+    knockbackX: 175,
+    knockbackY: -126,
     durationMs: 210,
     activeStartMs: 62,
     activeEndMs: 132,
     queueOpenMs: 112,
-    comboWindowMs: 280,
+    comboResetMs: 280,
+    cooldownMs: 200,
     hitbox: {
       offsetX: 38,
       offsetY: -2,
@@ -50,14 +60,19 @@ export const KATANA_COMBO: WeaponAttackDefinition[] = [
       strokeColor: 0x38bdf8,
       coreColor: 0xe0f2fe,
     },
-  },
-  {
+  }),
+  new AttackData({
     id: "katana_slash_3",
+    poseKey: "katana_slash_3",
+    damage: 2,
+    knockbackX: 205,
+    knockbackY: -140,
     durationMs: 260,
     activeStartMs: 86,
     activeEndMs: 170,
     queueOpenMs: 140,
-    comboWindowMs: 330,
+    comboResetMs: 330,
+    cooldownMs: 230,
     hitbox: {
       offsetX: 44,
       offsetY: -12,
@@ -74,5 +89,14 @@ export const KATANA_COMBO: WeaponAttackDefinition[] = [
       strokeColor: 0x22d3ee,
       coreColor: 0xf8fafc,
     },
-  },
-];
+  }),
+] as const;
+
+export default class Katana implements Weapon {
+  readonly id: WeaponId = "katana";
+  readonly attacks = ATTACKS;
+
+  getAttack(index: number) {
+    return this.attacks[index % this.attacks.length];
+  }
+}

@@ -84,7 +84,12 @@ export default abstract class Enemy {
     return true;
   }
 
-  takeDamage(amount: number, knockbackDirection: number) {
+  takeDamage(
+    amount: number,
+    knockbackDirection: number,
+    knockbackX = 150,
+    knockbackY = -120,
+  ) {
     if (this.isDead()) {
       return false;
     }
@@ -92,7 +97,7 @@ export default abstract class Enemy {
     this.health = Math.max(0, this.health - amount);
     this.scene.playSFX("punch");
     this.sprite.setTint(0xffffff);
-    this.sprite.setVelocity(knockbackDirection * 150, -120);
+    this.sprite.setVelocity(knockbackDirection * knockbackX, knockbackY);
     this.onDamaged(knockbackDirection);
 
     this.scene.time.delayedCall(90, () => {
