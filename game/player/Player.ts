@@ -20,10 +20,6 @@ const DASH_UPWARD_ASSIST = -90;
 const DASH_AFTERIMAGE_INTERVAL_MS = 45;
 const PLAYER_BODY_WIDTH = 24;
 const PLAYER_BODY_HEIGHT = 48;
-const FLIP_BODY_WIDTH = 22;
-const FLIP_BODY_HEIGHT = 30;
-const DASH_BODY_WIDTH = 22;
-const DASH_BODY_HEIGHT = 28;
 const MAX_HEALTH = 5;
 const DAMAGE_INVULNERABILITY_MS = 900;
 const DAMAGE_FLASH_MS = 120;
@@ -339,7 +335,6 @@ export default class Player {
     this.jumpBufferedUntil = 0;
     this.sprite.setFlipX(this.dashDirection < 0);
     this.sprite.body.allowGravity = true;
-    this.sprite.body.setSize(DASH_BODY_WIDTH, DASH_BODY_HEIGHT, true);
     this.sprite.setVelocityX(this.dashDirection * DASH_SPEED);
     this.sprite.setVelocityY(
       Math.min(this.sprite.body.velocity.y, DASH_UPWARD_ASSIST),
@@ -375,7 +370,6 @@ export default class Player {
     wasClimbing: boolean,
   ) {
     this.sprite.body.allowGravity = true;
-    this.sprite.body.setSize(DASH_BODY_WIDTH, DASH_BODY_HEIGHT, true);
     this.sprite.setVelocityX(this.dashDirection * DASH_SPEED);
 
     if (
@@ -401,7 +395,6 @@ export default class Player {
     this.dashUntil = 0;
     this.lastDashAfterImageAt = -Infinity;
     this.scene.cameraController.setDashZoomActive(false);
-    this.sprite.body.setSize(PLAYER_BODY_WIDTH, PLAYER_BODY_HEIGHT, true);
   }
 
   private tryStartFlip(
@@ -430,7 +423,6 @@ export default class Player {
     this.jumpBufferedUntil = 0;
 
     this.sprite.body.allowGravity = true;
-    this.sprite.body.setSize(FLIP_BODY_WIDTH, FLIP_BODY_HEIGHT, true);
     this.sprite.setVelocityX(direction * FLIP_FORWARD_SPEED);
     this.sprite.setVelocityY(
       Math.min(this.sprite.body.velocity.y, FLIP_UPWARD_BOOST),
@@ -448,7 +440,6 @@ export default class Player {
     const progress = 1 - (this.flipUntil - now) / FLIP_DURATION_MS;
     this.flipRotation = progress * Math.PI * 2 * this.flipDirection;
     this.sprite.body.allowGravity = true;
-    this.sprite.body.setSize(FLIP_BODY_WIDTH, FLIP_BODY_HEIGHT, true);
     this.sprite.setVelocityX(this.flipDirection * FLIP_FORWARD_SPEED);
 
     if (
@@ -472,7 +463,6 @@ export default class Player {
 
     this.flipUntil = 0;
     this.flipRotation = 0;
-    this.sprite.body.setSize(PLAYER_BODY_WIDTH, PLAYER_BODY_HEIGHT, true);
   }
 
   private updateHurt(
