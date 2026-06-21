@@ -128,6 +128,108 @@ export default abstract class Enemy {
     }
   }
 
+  public getBody() {
+    return this.sprite.body as Phaser.Physics.Arcade.Body;
+  }
+
+  public isGrounded() {
+    return this.getBody().blocked.down;
+  }
+
+  public isBlockedLeft() {
+    return this.getBody().blocked.left;
+  }
+
+  public isBlockedRight() {
+    return this.getBody().blocked.right;
+  }
+
+  public setAllowGravity(allowGravity: boolean) {
+    this.getBody().allowGravity = allowGravity;
+  }
+
+  public setVelocity(x: number, y?: number) {
+    this.sprite.setVelocity(x, y ?? this.getBody().velocity.y);
+  }
+
+  public setVelocityX(x: number) {
+    this.sprite.setVelocityX(x);
+  }
+
+  public setVelocityY(y: number) {
+    this.sprite.setVelocityY(y);
+  }
+
+  public stopHorizontalMovement() {
+    this.sprite.setVelocityX(0);
+  }
+
+  public faceDirection(direction: number) {
+    this.sprite.setFlipX(direction < 0);
+  }
+
+  public getFacingDirection() {
+    return this.sprite.flipX ? -1 : 1;
+  }
+
+  public facePlayer() {
+    this.faceDirection(this.scene.player.x < this.sprite.x ? -1 : 1);
+  }
+
+  public playAnimation(key: string) {
+    if (this.sprite.anims.currentAnim?.key === key) {
+      return;
+    }
+
+    this.sprite.play(key);
+  }
+
+  public moveTowardPlayer(speed: number) {
+    const direction = this.scene.player.x < this.sprite.x ? -1 : 1;
+    this.sprite.setVelocityX(direction * speed);
+    this.faceDirection(direction);
+    return direction;
+  }
+
+  public distanceToPlayer() {
+    return Phaser.Math.Distance.Between(
+      this.scene.player.x,
+      this.scene.player.y,
+      this.sprite.x,
+      this.sprite.y,
+    );
+  }
+
+  public horizontalDistanceToPlayer() {
+    return Math.abs(this.scene.player.x - this.sprite.x);
+  }
+
+  public verticalDistanceToPlayer() {
+    return Math.abs(this.scene.player.y - this.sprite.y);
+  }
+
+  public shouldJumpTowardPlayer(
+    verticalThreshold: number,
+    horizontalRange: number,
+  ) {
+    return (
+      this.getBody().blocked.down &&
+      (
+        this.getBody().blocked.left ||
+        this.getBody().blocked.right ||
+        (
+          this.scene.player.y < this.sprite.y - verticalThreshold &&
+          Math.abs(this.scene.player.x - this.sprite.x) < horizontalRange
+        )
+      )
+    );
+  }
+
+  public getPlayerBounds() {
+    const body = this.scene.player.body;
+    return new Phaser.Geom.Rectangle(body.x, body.y, body.width, body.height);
+  }
+
   protected onDamaged(knockbackDirection: number) {
     void knockbackDirection;
   }
@@ -138,87 +240,17 @@ export default abstract class Enemy {
     void stunDurationMs;
   }
 
-  protected getStunnedUntil() {
+  public getStunnedUntil() {
     return this.stunnedUntil;
   }
 
-  protected distanceToPlayer() {
-    return Phaser.Math.Distance.Between(
-      this.scene.player.x,
-      this.scene.player.y,
-      this.sprite.x,
-      this.sprite.y,
-    );
-  }
-
-  protected horizontalDistanceToPlayer() {
-    return Math.abs(this.scene.player.x - this.sprite.x);
-  }
-
-  protected verticalDistanceToPlayer() {
-    return Math.abs(this.scene.player.y - this.sprite.y);
-  }
-
-  protected moveTowardPlayer(speed: number) {
-    const direction = this.scene.player.x < this.sprite.x ? -1 : 1;
-    this.sprite.setVelocityX(direction * speed);
-    this.faceDirection(direction);
-    return direction;
-  }
-
-  protected stopHorizontalMovement() {
-    this.sprite.setVelocityX(0);
-  }
-
-  protected shouldJumpTowardPlayer(
-    verticalThreshold: number,
-    horizontalRange: number,
-  ) {
-    return (
-      this.sprite.body.blocked.down &&
-      (
-        this.sprite.body.blocked.left ||
-        this.sprite.body.blocked.right ||
-        (
-          this.scene.player.y < this.sprite.y - verticalThreshold &&
-          Math.abs(this.scene.player.x - this.sprite.x) < horizontalRange
-        )
-      )
-    );
-  }
-
-  protected faceDirection(direction: number) {
-    this.sprite.setFlipX(direction < 0);
-  }
-
-  protected getFacingDirection() {
-    return this.sprite.flipX ? -1 : 1;
-  }
-
-  protected facePlayer() {
-    this.faceDirection(this.scene.player.x < this.sprite.x ? -1 : 1);
-  }
-
-  protected playAnimation(key: string) {
-    if (this.sprite.anims.currentAnim?.key === key) {
-      return;
-    }
-
-    this.sprite.play(key);
-  }
-
-  protected damagePlayer(amount = 1) {
+  public damagePlayer(amount = 1) {
     if (this.scene.isDead || this.scene.playerController.isInvincible()) {
       return false;
     }
 
     this.scene.damagePlayer(this.sprite.x, this.sprite.y, amount);
     return true;
-  }
-
-  protected getPlayerBounds() {
-    const body = this.scene.player.body;
-    return new Phaser.Geom.Rectangle(body.x, body.y, body.width, body.height);
   }
 
   private die(knockbackDirection: number) {

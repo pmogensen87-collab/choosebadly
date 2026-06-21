@@ -46,6 +46,12 @@ export function createLevelAnimations(scene: Phaser.Scene) {
       repeat: -1,
     });
   }
+  if (!scene.anims.exists("enemy_idle")) {
+    scene.anims.create({
+      key: "enemy_idle",
+      frames: [{ key: "enemy_sheet", frame: 0 }],
+    });
+  }
   if (!scene.anims.exists("burn")) {
     scene.anims.create({
       key: "burn",
