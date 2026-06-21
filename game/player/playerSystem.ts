@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 
-import type { FallingPlatform } from "@/game/managers/level1Types";
 import Player from "@/game/player/Player";
 import type Level1 from "@/game/scenes/Level1";
 import { clearComboCounter } from "@/game/ui/hud";
@@ -39,41 +38,6 @@ export function registerPlayerWorldPhysics(
       scene.cameraController.shakeOnLanding(impactSpeed);
     }
   });
-
-  scene.physics.add.collider(
-    scene.player,
-    scene.fallingPlatforms,
-    (_player, platformObject) => {
-      const platform = platformObject as FallingPlatform;
-      const impactSpeed = Math.abs(scene.player.body.velocity.y);
-
-      if (scene.player.body.touching.down && !platform.isFalling) {
-        platform.isFalling = true;
-
-        scene.tweens.add({
-          targets: scene.player,
-          scaleY: 0.8,
-          scaleX: 1.2,
-          duration: 100,
-          yoyo: true,
-          ease: "Quad.easeOut",
-        });
-        landingDust.emitParticleAt(scene.player.x, scene.player.y + 24, 3);
-        scene.cameraController.shakeOnLanding(impactSpeed);
-
-        scene.tweens.add({
-          targets: platform,
-          x: platform.x + 2,
-          duration: 50,
-          yoyo: true,
-          repeat: 11,
-          onComplete: () => {
-            platform.body.allowGravity = true;
-          },
-        });
-      }
-    },
-  );
 }
 
 export function updatePlayer(scene: Level1) {

@@ -10,6 +10,7 @@ import type {
   SFXType,
 } from "@/game/managers/level1Types";
 import type Player from "@/game/player/Player";
+import type TraversalSystem from "@/game/player/traversalSystem";
 import { damagePlayer, killPlayer } from "@/game/player/playerSystem";
 import { updateHUD } from "@/game/ui/hud";
 import { performAttack } from "@/game/weapons/combat";
@@ -20,6 +21,7 @@ export default class Level1 extends Phaser.Scene {
   cameraController!: CameraController;
   playerController!: Player;
   combatManager!: CombatManager;
+  traversalSystem!: TraversalSystem;
   player!: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   isDead = false;
   isAttacking = false;
@@ -27,11 +29,13 @@ export default class Level1 extends Phaser.Scene {
   coinsCollected = 0;
   hasKey = false;
   deathMessages = ["BAD CHOICE", "SKILL ISSUE", "SAD?", "TRY AGAIN?", "NICE TRY", "GIT GUD", "BYE BYE"];
-  fallingPlatforms!: Phaser.Physics.Arcade.Group;
   hiddenHazards!: Phaser.GameObjects.Group;
   enemies!: Phaser.Physics.Arcade.Group;
   enemyControllers!: Enemy[];
   ladders!: Phaser.Physics.Arcade.StaticGroup;
+  ropes!: Phaser.Physics.Arcade.StaticGroup;
+  oneWayPlatforms!: Phaser.Physics.Arcade.StaticGroup;
+  ledges!: Phaser.Physics.Arcade.StaticGroup;
   tubes!: Phaser.Physics.Arcade.StaticGroup;
   coins!: Phaser.Physics.Arcade.StaticGroup;
   keyItems!: Phaser.Physics.Arcade.StaticGroup;

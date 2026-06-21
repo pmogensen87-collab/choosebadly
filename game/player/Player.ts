@@ -180,6 +180,7 @@ export default class Player {
   cancelTransientStates() {
     this.finishDash();
     this.finishFlip();
+    this.scene.traversalSystem.cancelTraversal();
   }
 
   setRenderVisible(visible: boolean) {
@@ -261,6 +262,29 @@ export default class Player {
       this.updateWalkCycle();
       this.draw();
       this.wasJumpHeld = jumpHeld;
+      return;
+    }
+
+    const traversalHandled = this.scene.traversalSystem.update({
+      now,
+      deltaSeconds,
+      jumpPressed,
+      jumpHeld,
+      leftDown: this.cursors.left.isDown || this.keys.A.isDown,
+      rightDown: this.cursors.right.isDown || this.keys.D.isDown,
+      upDown: this.cursors.up.isDown || this.keys.W.isDown,
+      downDown: this.cursors.down.isDown || this.keys.S.isDown,
+    });
+
+    if (traversalHandled) {
+      this.jumpBufferedUntil = 0;
+      this.jumpConsumed = true;
+      this.updateWalkCycle();
+      this.draw();
+      this.wasJumpHeld = jumpHeld;
+      if (this.sprite.y > 620) {
+        this.scene.killPlayer();
+      }
       return;
     }
 

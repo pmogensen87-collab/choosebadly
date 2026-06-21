@@ -54,13 +54,6 @@ export function registerEnemyEncounters(
   platforms: Phaser.Physics.Arcade.StaticGroup,
 ) {
   scene.physics.add.collider(scene.enemies, platforms);
-  scene.physics.add.collider(scene.enemies, scene.fallingPlatforms);
-  scene.physics.add.overlap(scene.player, scene.enemies, (_player, enemyObject) => {
-    const enemy = getEnemyController(
-      enemyObject as Phaser.Types.Physics.Arcade.SpriteWithDynamicBody,
-    );
-    enemy?.handlePlayerContact();
-  });
 }
 
 export function updateEnemies(scene: Level1) {

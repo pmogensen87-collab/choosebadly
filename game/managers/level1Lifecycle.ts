@@ -23,6 +23,7 @@ import {
   updatePlayer,
 } from "@/game/player/playerSystem";
 import type Level1 from "@/game/scenes/Level1";
+import TraversalSystem from "@/game/player/traversalSystem";
 import { createHUD, updateComboCounter } from "@/game/ui/hud";
 import CombatManager from "@/game/weapons/combatManager";
 import { createLevelAnimations } from "@/game/world/animations";
@@ -66,12 +67,22 @@ export function initializeLevel1(
   const world = buildLevelWorld(scene);
   createPlayer(scene);
   scene.combatManager = new CombatManager(scene);
+  scene.traversalSystem = new TraversalSystem(scene);
   scene.cameraController = new CameraController(scene);
   createEnemies(scene);
   registerEnemyEncounters(scene, world.platforms);
 
   const landingDust = createLandingDust(scene);
   registerPlayerWorldPhysics(scene, world.platforms, landingDust);
+  scene.traversalSystem.registerWorld(
+    {
+      ladders: scene.ladders,
+      ropes: scene.ropes,
+      oneWayPlatforms: scene.oneWayPlatforms,
+      ledges: scene.ledges,
+    },
+    landingDust,
+  );
 
   createHUD(scene);
   wireWorldInteractions(scene, world.hazards);
