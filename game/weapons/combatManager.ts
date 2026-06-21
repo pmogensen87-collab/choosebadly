@@ -33,7 +33,6 @@ const COUNTER_ATTACK_DAMAGE = 2;
 
 export default class CombatManager extends Phaser.Events.EventEmitter {
   private readonly scene: Level1;
-  private readonly handlePointerDown: (pointer: Phaser.Input.Pointer) => void;
   private weapon: Weapon;
 
   private comboIndex = -1;
@@ -55,24 +54,6 @@ export default class CombatManager extends Phaser.Events.EventEmitter {
     super();
     this.scene = scene;
     this.weapon = weapon;
-
-    scene.input.mouse?.disableContextMenu();
-    this.handlePointerDown = (pointer) => {
-      if (this.scene.isDead) {
-        return;
-      }
-
-      if (pointer.button === 2 || pointer.rightButtonDown()) {
-        this.triggerParry();
-        return;
-      }
-
-      if (pointer.button === 0 || pointer.leftButtonDown()) {
-        this.triggerPrimaryAttack();
-      }
-    };
-
-    scene.input.on("pointerdown", this.handlePointerDown);
     scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.destroy();
     });
@@ -99,12 +80,19 @@ export default class CombatManager extends Phaser.Events.EventEmitter {
     if (!this.scene.isDead) {
       this.restoreTimeScales();
     }
-    this.scene.input.off("pointerdown", this.handlePointerDown);
     this.removeAllListeners();
   }
 
   update() {
     const now = this.scene.time.now;
+
+    if (this.scene.controlsManager.parryPressed) {
+      this.triggerParry();
+    }
+
+    if (this.scene.controlsManager.attackPressed) {
+      this.triggerPrimaryAttack();
+    }
 
     if (this.currentAttack) {
       this.processActiveHitbox(now);

@@ -4,6 +4,7 @@ import { playSFX } from "@/game/effects/audio";
 import type Enemy from "@/game/enemies/Enemy";
 import { damageEnemy, killEnemy } from "@/game/enemies/enemySystem";
 import type CameraController from "@/game/managers/cameraController";
+import type ControlsManager from "@/game/managers/controlsManager";
 import { initializeLevel1, updateLevel1 } from "@/game/managers/level1Lifecycle";
 import type {
   Level1SceneData,
@@ -19,6 +20,7 @@ import { preloadLevelAssets } from "@/game/world/assets";
 
 export default class Level1 extends Phaser.Scene {
   cameraController!: CameraController;
+  controlsManager!: ControlsManager;
   playerController!: Player;
   combatManager!: CombatManager;
   traversalSystem!: TraversalSystem;

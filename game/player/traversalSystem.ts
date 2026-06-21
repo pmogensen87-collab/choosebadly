@@ -94,7 +94,7 @@ export default class TraversalSystem {
     }
 
     if (this.mode === "ledge") {
-      this.updateLedge(input);
+      this.updateLedge();
       return true;
     }
 
@@ -228,7 +228,7 @@ export default class TraversalSystem {
       return false;
     }
 
-    if (!input.upDown && !input.jumpPressed) {
+    if (!input.upDown) {
       return false;
     }
 
@@ -307,7 +307,7 @@ export default class TraversalSystem {
       return false;
     }
 
-    if (!(input.jumpPressed || input.upDown)) {
+    if (!input.upDown) {
       return false;
     }
 
@@ -335,8 +335,7 @@ export default class TraversalSystem {
     return true;
   }
 
-  private updateLedge(_input: TraversalInput) {
-    void _input;
+  private updateLedge() {
     this.scene.isClimbing = true;
     this.scene.player.body.allowGravity = false;
     this.scene.player.setVelocity(0, 0);
@@ -384,7 +383,7 @@ export default class TraversalSystem {
   }
 
   private tryDropThrough(input: TraversalInput) {
-    if (!input.downDown || !input.jumpPressed) {
+    if (!input.downDown) {
       return false;
     }
 

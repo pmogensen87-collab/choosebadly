@@ -12,6 +12,7 @@ import {
   updateEnemies,
 } from "@/game/enemies/enemySystem";
 import CameraController from "@/game/managers/cameraController";
+import ControlsManager from "@/game/managers/controlsManager";
 import {
   LEVEL_HEIGHT,
   LEVEL_WIDTH,
@@ -65,6 +66,7 @@ export function initializeLevel1(
   createLevelAnimations(scene);
 
   const world = buildLevelWorld(scene);
+  scene.controlsManager = new ControlsManager(scene);
   createPlayer(scene);
   scene.combatManager = new CombatManager(scene);
   scene.traversalSystem = new TraversalSystem(scene);
@@ -97,6 +99,8 @@ export function updateLevel1(scene: Level1) {
     return;
   }
 
+  scene.controlsManager.update();
+  scene.combatManager.update();
   updatePlayer(scene);
   if (scene.isDead) {
     return;
@@ -107,7 +111,6 @@ export function updateLevel1(scene: Level1) {
     return;
   }
 
-  scene.combatManager.update();
   revealHiddenHazards(scene);
   updateComboCounter(scene);
 

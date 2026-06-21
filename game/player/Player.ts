@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-import type { MovementKeys } from "@/game/managers/level1Types";
+import type ControlsManager from "@/game/managers/controlsManager";
 import type Level1 from "@/game/scenes/Level1";
 import { handleTubeInteraction } from "@/game/world/levelBuilder";
 
@@ -9,7 +9,6 @@ const JUMP_BUFFER_MS = 120;
 const EXTRA_FALL_GRAVITY = 1400;
 const JUMP_CUT_GRAVITY = 2200;
 const JUMP_RELEASE_CUT = 0.58;
-const FLIP_DOUBLE_TAP_MS = 250;
 const FLIP_COOLDOWN_MS = 900;
 const FLIP_DURATION_MS = 340;
 const FLIP_FORWARD_SPEED = 620;
@@ -25,8 +24,6 @@ const FLIP_BODY_WIDTH = 22;
 const FLIP_BODY_HEIGHT = 30;
 const DASH_BODY_WIDTH = 22;
 const DASH_BODY_HEIGHT = 28;
-const SPRINT_SPEED = 380;
-const SPRINT_JUMP_SPEED = -470;
 const MAX_HEALTH = 5;
 const DAMAGE_INVULNERABILITY_MS = 900;
 const DAMAGE_FLASH_MS = 120;
@@ -47,10 +44,9 @@ export default class Player {
   readonly sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
 
   private readonly scene: Level1;
-  private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
-  private readonly keys: MovementKeys;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly toggleFullscreen: () => void;
+  private readonly controls: ControlsManager;
 
   private attackPose: string | null = null;
   private renderVisible = true;
@@ -59,7 +55,6 @@ export default class Player {
   private jumpBufferedUntil = 0;
   private jumpConsumed = false;
   private wasJumpHeld = false;
-  private lastSpaceTapAt = -Infinity;
   private flipCooldownUntil = 0;
   private flipUntil = 0;
   private flipDirection = 1;
@@ -82,11 +77,7 @@ export default class Player {
 
     this.graphics = scene.add.graphics();
     this.graphics.setDepth(30);
-
-    this.cursors = scene.input.keyboard!.createCursorKeys();
-    this.keys = scene.input.keyboard!.addKeys(
-      "A,D,W,S,SHIFT",
-    ) as MovementKeys;
+    this.controls = scene.controlsManager;
 
     this.toggleFullscreen = () => {
       if (scene.scale.isFullscreen) {
@@ -194,10 +185,8 @@ export default class Player {
     const wasClimbing = this.scene.isClimbing;
     this.scene.isClimbing = false;
 
-    const spaceJustPressed = Phaser.Input.Keyboard.JustDown(this.cursors.space);
-    const shiftJustPressed = Phaser.Input.Keyboard.JustDown(this.keys.SHIFT);
     const jumpHeld = this.isJumpHeld();
-    const jumpPressed = this.didPressJump(spaceJustPressed);
+    const jumpPressed = this.controls.jumpPressed && !this.controls.flipPressed;
     const isGrounded = this.sprite.body.blocked.down;
 
     if (this.flipUntil !== 0 && now >= this.flipUntil) {
@@ -214,22 +203,18 @@ export default class Player {
 
     const startedDash = this.isHurt()
       ? false
-      : this.tryStartDash(now, shiftJustPressed, wasClimbing);
+      : this.tryStartDash(now, this.controls.dashPressed, wasClimbing);
     const startedFlip = !startedDash
       ? (this.isHurt()
         ? false
-        : this.tryStartFlip(now, spaceJustPressed, wasClimbing))
+        : this.tryStartFlip(now, this.controls.flipPressed, wasClimbing))
       : false;
 
     if (jumpPressed && !startedFlip) {
       this.jumpBufferedUntil = now + JUMP_BUFFER_MS;
     }
 
-    const isSprinting = this.keys.SHIFT.isDown && !this.isDashing();
-    const speed = isSprinting ? SPRINT_SPEED : 300;
-    const jumpSpeed = isSprinting ? SPRINT_JUMP_SPEED : -450;
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.S)) {
+    if (this.controls.interactPressed) {
       handleTubeInteraction(this.scene);
     }
 
@@ -270,10 +255,10 @@ export default class Player {
       deltaSeconds,
       jumpPressed,
       jumpHeld,
-      leftDown: this.cursors.left.isDown || this.keys.A.isDown,
-      rightDown: this.cursors.right.isDown || this.keys.D.isDown,
-      upDown: this.cursors.up.isDown || this.keys.W.isDown,
-      downDown: this.cursors.down.isDown || this.keys.S.isDown,
+      leftDown: this.controls.leftDown,
+      rightDown: this.controls.rightDown,
+      upDown: this.controls.upDown,
+      downDown: this.controls.downDown,
     });
 
     if (traversalHandled) {
@@ -294,34 +279,26 @@ export default class Player {
       this.sprite.body.allowGravity = false;
       this.sprite.setVelocityY(0);
 
-      if (this.keys.W.isDown || this.cursors.up.isDown) {
+      if (this.controls.upDown) {
         this.sprite.setVelocityY(-200);
-      } else if (this.keys.S.isDown || this.cursors.down.isDown) {
+      } else if (this.controls.downDown) {
         this.sprite.setVelocityY(200);
       }
     } else {
       this.sprite.body.allowGravity = true;
     }
 
-    if (this.cursors.left.isDown || this.keys.A.isDown) {
-      this.sprite.setVelocityX(-speed);
+    if (this.controls.leftDown) {
+      this.sprite.setVelocityX(-300);
       this.sprite.setFlipX(true);
     }
 
-    if (this.cursors.right.isDown || this.keys.D.isDown) {
-      this.sprite.setVelocityX(speed);
+    if (this.controls.rightDown) {
+      this.sprite.setVelocityX(300);
       this.sprite.setFlipX(false);
     }
 
-    if (
-      isSprinting &&
-      Math.abs(this.sprite.body.velocity.x) > 0 &&
-      Math.random() > 0.4
-    ) {
-      this.spawnGhostTrail();
-    }
-
-    this.tryConsumeBufferedJump(now, jumpSpeed, wasClimbing);
+    this.tryConsumeBufferedJump(now, -450, wasClimbing);
     this.applyJumpGravity(deltaSeconds, jumpHeld, wasClimbing);
 
     this.updateWalkCycle();
@@ -334,27 +311,15 @@ export default class Player {
   }
 
   private isJumpHeld() {
-    return (
-      this.cursors.space.isDown ||
-      this.cursors.up.isDown ||
-      this.keys.W.isDown
-    );
-  }
-
-  private didPressJump(spaceJustPressed: boolean) {
-    return (
-      spaceJustPressed ||
-      Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
-      Phaser.Input.Keyboard.JustDown(this.keys.W)
-    );
+    return this.controls.jumpHeld;
   }
 
   private tryStartDash(
     now: number,
-    shiftJustPressed: boolean,
+    dashPressed: boolean,
     wasClimbing: boolean,
   ) {
-    if (!shiftJustPressed) {
+    if (!dashPressed) {
       return false;
     }
 
@@ -385,11 +350,11 @@ export default class Player {
   }
 
   private resolveDashDirection() {
-    if (this.cursors.left.isDown || this.keys.A.isDown) {
+    if (this.controls.leftDown) {
       return -1;
     }
 
-    if (this.cursors.right.isDown || this.keys.D.isDown) {
+    if (this.controls.rightDown) {
       return 1;
     }
 
@@ -441,18 +406,14 @@ export default class Player {
 
   private tryStartFlip(
     now: number,
-    spaceJustPressed: boolean,
+    flipPressed: boolean,
     wasClimbing: boolean,
   ) {
-    if (!spaceJustPressed) {
+    if (!flipPressed) {
       return false;
     }
 
-    const tappedWithinWindow = now - this.lastSpaceTapAt <= FLIP_DOUBLE_TAP_MS;
-    this.lastSpaceTapAt = now;
-
     if (
-      !tappedWithinWindow ||
       now < this.flipCooldownUntil ||
       this.scene.isAttacking ||
       this.isDashing() ||
@@ -467,7 +428,6 @@ export default class Player {
     this.flipUntil = now + FLIP_DURATION_MS;
     this.flipCooldownUntil = now + FLIP_COOLDOWN_MS;
     this.jumpBufferedUntil = 0;
-    this.lastSpaceTapAt = -Infinity;
 
     this.sprite.body.allowGravity = true;
     this.sprite.body.setSize(FLIP_BODY_WIDTH, FLIP_BODY_HEIGHT, true);
